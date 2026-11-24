@@ -1,0 +1,8 @@
+# Local IDE state
+.vs/
+.idea/
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+Desktop.ini

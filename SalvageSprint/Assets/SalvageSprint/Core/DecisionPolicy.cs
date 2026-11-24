@@ -6,7 +6,7 @@ namespace SalvageSprint.Core
     // Delivery is supplied so the unmodified game has a complete scoring loop.
     public static class DecisionPolicy
     {
-        public const string Label = "Part 1 starter: nearest candidate";
+        public const string Label = "Anton v1: nearest candidate";
 
         public static AgentFacts Infer(Observation observation)
         {
@@ -31,7 +31,7 @@ namespace SalvageSprint.Core
             if (facts.NeedsDelivery)
                 return new Decision(TaskKind.Deliver, -1, "Cargo held: return to depot");
             return facts.HasUsableTarget
-                ? new Decision(TaskKind.Collect, facts.SelectedTargetId, "Nearest candidate; reselected each tick")
+                ? new Decision(TaskKind.Collect, facts.SelectedTargetId, "Nearest available pickup; sight, memory and blocked ignored")
                 : new Decision(TaskKind.Explore, -1, "No candidate: visit the next survey point");
         }
     }
