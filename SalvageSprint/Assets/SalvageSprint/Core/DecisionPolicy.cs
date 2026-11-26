@@ -1,19 +1,16 @@
 namespace SalvageSprint.Core
 {
-    // Week 1 assignment. Work through README stages in this same project.
-    // STAGE 2 (done): only known targets (visible or remembered) can be selected.
-    // STAGE 3: retain a usable remembered target. STAGE 4: use failed-route feedback.
     // Delivery is supplied so the unmodified game has a complete scoring loop.
     public static class DecisionPolicy
     {
-        public const string Label = "Anton v2: known targets only";
+        public const string Label = "Anton v3: hinder oscillation";
 
         // Stage 2 truth table (before distance is considered):
         //   available + visible             -> known, usable
         //   available + hidden + unknown    -> NOT known (sensor candidate only)
         //   available + hidden + remembered -> known, usable (memory persists)
         //   unavailable + remembered        -> known but NOT usable
-        private static bool IsKnownAndAvailable(Candidate candidate)
+        private static bool IsEligible(Candidate candidate)
         {
             return candidate.Available && (candidate.Visible || candidate.Remembered);
         }
@@ -23,14 +20,23 @@ namespace SalvageSprint.Core
             if (observation.Carrying)
                 return new AgentFacts(true, -1, false);
 
+            // Retain the current target if it is still eligible, even if there is a closer one.
+            // This stops the rival from updating closest candidate and oscillating between two pickups
+            foreach (Candidate candidate in observation.Candidates)
+            {
+                if (candidate.Id == observation.CurrentTargetId && IsEligible(candidate))
+                    return new AgentFacts(false, candidate.Id, true);
+            }
+
             int nearest = -1;
             float distance = float.PositiveInfinity;
             foreach (Candidate candidate in observation.Candidates)
             {
                 // Filter first, then rank by distance. Blocked is still ignored (Stage 4).
-                if (IsKnownAndAvailable(candidate) && candidate.DistanceSquared < distance)
+                if (IsEligible(candidate) && candidate.DistanceSquared < distance)
                 { nearest = candidate.Id; distance = candidate.DistanceSquared; }
             }
+
             return new AgentFacts(false, nearest, false);
         }
 

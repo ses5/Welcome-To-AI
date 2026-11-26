@@ -8,7 +8,7 @@ Exact Unity version: 6000.3.26f1
 
 Checkpoint commit / repository: https://github.com/ses5/Welcome-To-AI
 
-Current stage and anything unfinished: Stage 2 complete (13/17 successful tests). Stage 3 next.
+Current stage and anything unfinished: Stage 3 complete (14/17 successful tests). Stage 4 next.
 
 ## Initial prediction
 
@@ -29,14 +29,28 @@ By moving a wall next to the rival's spawn point and rebaking the NavMesh, I blo
 
 On the next decision `RivalBrain` saw the failed route and marked the pickup as blocked for six seconds. Since the policy ignores `Blocked`, it chose the same pickup again and the rival got stuck. This is the weakness to fix in Stage 4.
 
+## Task transitions
+
+Explore (discovers a known pickup) --> Collect
+
+Collect (target stays usable) --> Collect (retained)
+
+Collect (target unavailable / no longer known) --> Collect (other known target) or Explore
+
+Collect (successful collection: Carrying = true) --> Deliver
+
+Deliver (delivery banks scrap, Carrying = false) --> Collect (if a known target exists) or Explore
+
+Explore (arrived at / failed survey point )--> Explore (next survey point)
+
 ## Scenario record
 
 | Scenario | Predicted result | Observed result and short evidence / remaining issue |
 |---|---|---|
 | Normal loop and restart | | |
 | Carrying cargo | | |
-| Hidden / remembered pickup | The rival ignores the hidden pickup and goes to a visible one, or explores | F4 start: two candidates in range; Scrap 0 (dist² 25) is hidden behind the occlusion wall, Scrap 1 (dist² 64) is visible. Rival chose Target 1, reason "Nearest eligible known pickup" (HUD: Visible 1). The starter would have chosen the nearer hidden Scrap 0. Later, delivery from behind the wall fails repeatedly (`remainingDistance=Infinity`, reported to teacher) |
-| Target taken | | |
+| Hidden / remembered pickup | The rival ignores the hidden pickup and goes to a visible one, or explores | F4 start: two candidates in range; Scrap 0 (closest) is hidden behind the occlusion wall, Scrap 1 (further away) is visible. Rival chose Target 1, reason "Nearest eligible known pickup" (HUD: Visible 1). The starter would have chosen the nearer hidden Scrap 0. |
+| Target taken | The rival changes its target to the closest visible one | F5 start: only Scrap 0 is in sensor range (HUD: Visible 1); rival chose Target 0, "Nearest eligible known pickup". When the helper took Scrap 0, the rival released it: Target -1, "No eligible known pickup: visit the next survey point". My prediction was wrong, no other pickup was known, so it explored instead of switching. While exploring it discovered Scrap 1, collected and delivered it, then later Scrap 2. With no pickups left it keeps patrolling survey points without crashing or inventing targets. |
 | Unreachable target | | |
 | No usable pickup | | |
 
@@ -56,6 +70,11 @@ My counterexample or experiment: prediction, observed result, and one limitation
 
 People I discussed or playtested with:
 
-Code, sources or substantive tools/AI assistance I used, and how I verified them: Claude helped with Stage 2: truth table and the known-target filter in `DecisionPolicy.Infer`, and diagnosing the delivery navigation warnings in F4. Verified by running the EditMode tests (13/17) and observing F4.
+Code, sources or substantive tools/AI assistance I used, and how I verified them: Claude assistance:
+- Stage 2: Claude wrote the truth table in `DecisionPolicy.Infer`, and diagnosed the repeated delivery navigation warnings in F4 (`remainingDistance=Infinity` treated as `Failed`). Verified by running the EditMode tests (13/17) and observing F4. The Stage 2 filter was written by Claude without me noticing before I asked it not to edit my code, I had planned the same approach, reviewed it and can explain it.
+- Stage 3: I wrote the retention loop in `DecisionPolicy.Infer` myself after hints from Claude (which file/method, where the check belongs, match on `Id`). Claude explained the F5 layout (why only one pickup is visible at start), suggested the wording of the F5 observation from what I observed, and drafted the task transitions, which I used. Verified with the EditMode tests (14/17, only `Stage4_*` failing) and by playing F5 while paused and hopping forward frame by frame.
+- Claude also fixed typos and code formatting (backticks) in this file and `DecisionPolicy.cs`.
+
+I made sure Claude directly changed my files as little as possible so I could learn from it. (Except for tedious tasks such as fixing typos)
 
 If unfinished: what works, exact reproduction steps, and the help I need:
