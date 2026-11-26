@@ -3,7 +3,7 @@ namespace SalvageSprint.Core
     // Delivery is supplied so the unmodified game has a complete scoring loop.
     public static class DecisionPolicy
     {
-        public const string Label = "Anton v3: hinder oscillation";
+        public const string Label = "Anton v4: ignore blocked targets";
 
         // Stage 2 truth table (before distance is considered):
         //   available + visible             -> known, usable
@@ -24,17 +24,23 @@ namespace SalvageSprint.Core
             // This stops the rival from updating closest candidate and oscillating between two pickups
             foreach (Candidate candidate in observation.Candidates)
             {
-                if (candidate.Id == observation.CurrentTargetId && IsEligible(candidate))
+                if (!candidate.Blocked)
+                {
+                    if (candidate.Id == observation.CurrentTargetId && IsEligible(candidate))
                     return new AgentFacts(false, candidate.Id, true);
+                }
             }
 
             int nearest = -1;
             float distance = float.PositiveInfinity;
             foreach (Candidate candidate in observation.Candidates)
             {
-                // Filter first, then rank by distance. Blocked is still ignored (Stage 4).
-                if (IsEligible(candidate) && candidate.DistanceSquared < distance)
-                { nearest = candidate.Id; distance = candidate.DistanceSquared; }
+                if (!candidate.Blocked)
+                {
+                    // Filter first, then rank by distance.
+                    if (IsEligible(candidate) && candidate.DistanceSquared < distance)
+                    { nearest = candidate.Id; distance = candidate.DistanceSquared; }
+                }
             }
 
             return new AgentFacts(false, nearest, false);
