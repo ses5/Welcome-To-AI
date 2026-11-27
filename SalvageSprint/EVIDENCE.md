@@ -6,7 +6,7 @@ Name: Anton Sellbom
 
 Exact Unity version: 6000.3.26f1
 
-Checkpoint commit / repository: https://github.com/ses5/Welcome-To-AI
+Checkpoint commit / repository: https://github.com/ses5/Welcome-To-AI, Checkpoint commit: df4dbb2
 
 Current stage and anything unfinished: Stage 5 complete (22/22 successful tests, 5 additional tests were added as per the teachers request). Part 1 finished.
 
