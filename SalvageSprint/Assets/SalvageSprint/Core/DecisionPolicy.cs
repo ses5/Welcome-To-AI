@@ -12,7 +12,7 @@ namespace SalvageSprint.Core
         //   unavailable + remembered        -> known but NOT usable
         private static bool IsEligible(Candidate candidate)
         {
-            if (!candidate.Blocked)
+            if (candidate.Blocked)
                 return false;
 
             return candidate.Available && (candidate.Visible || candidate.Remembered);

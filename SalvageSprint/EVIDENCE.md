@@ -8,7 +8,7 @@ Exact Unity version: 6000.3.26f1
 
 Checkpoint commit / repository: https://github.com/ses5/Welcome-To-AI
 
-Current stage and anything unfinished: Stage 4 complete (22/22 successful tests, 5 additional tests were added as per the teachers request). Stage 5 next.
+Current stage and anything unfinished: Stage 4 complete (22/22 successful tests, 5 additional tests were added as per the teachers request). Stage 5 currently being worked on.
 
 ## Initial prediction
 
@@ -47,8 +47,8 @@ Explore (arrived at / failed survey point )--> Explore (next survey point)
 
 | Scenario | Predicted result | Observed result and short evidence / remaining issue |
 |---|---|---|
-| Normal loop and restart | Target 4 is being pursued and Target 5 should be ignored | F2 start: Target 4 was pursued and Target 5 was ignored. |
-| Carrying cargo | Rival will deliver the cargo and ignore other scraps until its delivered | F3 start: The rival delivered the scrap it was carrying while ignoring other scraps. After delivering, the rival started pursuing the closest scrap. |
+| Normal loop and restart | The rival collects a known pickup, banks it, continues with the next one, the match ends with a result and R restarts it cleanly | F2: The rival goes to the closest eligible Target, returns it to the depo, and repeats this until the match is over. If no Target is eligible, the rival will explore. |
+| Carrying cargo | The rival delivers its cargo first and ignores other scrap until it has been delivered | F3 start: Cargo True, Task Deliver, reason "Cargo held: return to depot". The rival went straight to its depot and ignored the visible scrap on the way. After banking the cargo it switched to Collect and pursued the nearest eligible known pickup. Matches the prediction: cargo priority comes before collection in `DecisionPolicy.Infer`. |
 | Hidden / remembered pickup | The rival ignores the hidden pickup and goes to a visible one, or explores | F4 start: two candidates in range; Scrap 0 (closest) is hidden behind the occlusion wall, Scrap 1 (further away) is visible. Rival chose Target 1, reason "Nearest eligible known pickup" (HUD: Visible 1). The starter would have chosen the nearer hidden Scrap 0. |
 | Target taken | The rival changes its target to the closest visible one | F5 start: only Scrap 0 is in sensor range (HUD: Visible 1); rival chose Target 0, "Nearest eligible known pickup". When the helper took Scrap 0, the rival released it: Target -1, "No eligible known pickup: visit the next survey point". My prediction was wrong, no other pickup was known, so it explored instead of switching. While exploring it discovered Scrap 1, collected and delivered it, then later Scrap 2. With no pickups left it keeps patrolling survey points without crashing or inventing targets. |
 | Unreachable target | The rival ignores the unreachable scrap and goes to a visible one, or explores | F6 start: Task: Collect, Scrap 0 is visible, Target 0 is chosen. Scrap 1 is visible (HUD: Visible 2). Target switches to Target 1, reason "Nearest eligible known pickup". This switch happens because Target 0 isn't usable. The route to Scrap 0 failed, so RivalBrain marked it Blocked for 6 seconds and my policy skipped it. The rival picks up Target 1, Target becomes -1 and Visible becomes 1, reason "Cargo held: return to depot". When the scrap is delivered Task becomes Explore, reason "No eligible known pickup: visit next survey point". My prediction wasn't entirely correct as the rival doesn't ignore Scrap 0 immediately, it can only be ignored after rival attempts to reach it. Every 6 seconds it attempts to reach Scrap 0 again, which leads to a warning in the console. This resets Blocked back to 1, and refreshes the same Last failure message. |
