@@ -12,6 +12,9 @@ namespace SalvageSprint.Core
         //   unavailable + remembered        -> known but NOT usable
         private static bool IsEligible(Candidate candidate)
         {
+            if (!candidate.Blocked)
+                return false;
+
             return candidate.Available && (candidate.Visible || candidate.Remembered);
         }
 
@@ -24,23 +27,17 @@ namespace SalvageSprint.Core
             // This stops the rival from updating closest candidate and oscillating between two pickups
             foreach (Candidate candidate in observation.Candidates)
             {
-                if (!candidate.Blocked)
-                {
-                    if (candidate.Id == observation.CurrentTargetId && IsEligible(candidate))
+                if (candidate.Id == observation.CurrentTargetId && IsEligible(candidate))
                     return new AgentFacts(false, candidate.Id, true);
-                }
             }
 
             int nearest = -1;
             float distance = float.PositiveInfinity;
             foreach (Candidate candidate in observation.Candidates)
             {
-                if (!candidate.Blocked)
-                {
-                    // Filter first, then rank by distance.
-                    if (IsEligible(candidate) && candidate.DistanceSquared < distance)
-                    { nearest = candidate.Id; distance = candidate.DistanceSquared; }
-                }
+                // Filter first, then rank by distance.
+                if (IsEligible(candidate) && candidate.DistanceSquared < distance)
+                { nearest = candidate.Id; distance = candidate.DistanceSquared; }
             }
 
             return new AgentFacts(false, nearest, false);
